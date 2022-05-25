@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spring-config
+data:
+    example.datasource.url: "jdbc:mysql://dev-endpoint/example"
+    example.datasource.username: "dev-root"
+    example.datasource.password: "dev-pass"
