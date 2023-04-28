@@ -1,0 +1,54 @@
+build_stage: 
+  stage: build
+  image: $BUILD_IMAGE 
+  tags:
+    - "runner2" 
+  script: 
+    - id  
+    - hostname 
+    - pwd 
+    - ls -lrt 
+    - mvn -version 
+    - mvn clean deploy -s ci_settings.xml
+    - ls -lrt target/springdemo-0.0.1-SNAPSHOT.jar
+  artifacts: 
+    paths: 
+      - target 
+      - Dockerfile
+
+package_stage: 
+  stage: build
+  image: docker:stable 
+  needs: 
+    - job: build_stage 
+      artifacts: true 
+  variables:
+    GIT_STRATEGY: none
+  before_script: 
+    - docker login -u $DOCKER_ID -p $DOCKER_PASSWD  
+  script: 
+    - ls -lrt 
+    - ls -lrt target 
+    - docker images  
+    - docker build -t $APP_IMAGE_NAME:$APP_IMAGE_VER . 
+    - docker push $APP_IMAGE_NAME:$APP_IMAGE_VER 
+
+deploy_to_dev: 
+  stage: deploy
+  needs: 
+    - job: package_stage 
+  variables:
+    GIT_STRATEGY: none
+  tags: 
+    - "runner2_shell"  
+  
+  before_script:
+    - ssh $DEV_ID@$DEV_SERVER "docker ps"
+    - ssh $DEV_ID@$DEV_SERVER "docker ps -aqf "name=springdemo" | xargs docker rm -f || echo removed any existing containers "
+  
+  script: 
+    - ssh $DEV_ID@$DEV_SERVER "docker pull $APP_IMAGE_NAME:$APP_IMAGE_VER"
+    - ssh $DEV_ID@$DEV_SERVER "docker run --name springdemo -d -e APP_BASE_URL=$APP_BASE_URL -p8085:8080 $APP_IMAGE_NAME:$APP_IMAGE_VER"
+    - ssh $DEV_ID@$DEV_SERVER "wget -q --spider localhost:8085"
+    - wget --spider $DEV_SERVER:8082
+    - echo "Application is deployed to DEV server $DEV_SERVER successfully!!"
