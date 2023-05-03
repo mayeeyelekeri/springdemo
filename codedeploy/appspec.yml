@@ -1,7 +1,7 @@
 version: 0.0
 os: linux
 files:
-  - source: springdemo-0.0.1-SNAPSHOT.jar
+  - source: springdemo-1.0.0-SNAPSHOT.jar
     destination: /tmp
   - source: Dockerfile
     destination: /tmp
