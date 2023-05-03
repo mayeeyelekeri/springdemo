@@ -1,4 +1,4 @@
 #!/bin/bash
 docker ps 
-docker kill $(docker ps -q)
+docker ps -aqf "springdemo"  |xargs docker rm -f  | echo "removed any old running containers(if any)"
 docker ps 
