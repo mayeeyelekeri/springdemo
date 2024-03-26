@@ -6,7 +6,9 @@ phases:
       - echo Pre-Build started on `date`
   build:
     commands:
-      - echo Build completed on `date`
+      - echo Build started on `date`
+      - javac --version 
+      - java --version
       - mvn clean package
 
   post_build:
